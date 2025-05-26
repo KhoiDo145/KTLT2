@@ -151,7 +151,106 @@ string Infantry::str() override {
 //
 
 // 3.5
+UnitList::UnitList(int capacity) 
+    : head(nullptr), size(0), capacity(capacity) 
+{}
 
+UnitList::~UnitList() {
+    Node* cur = head;
+    while (cur) {
+        Node* temp = cur->next;
+        delete cur->data;
+        delete cur;
+        cur = temp;
+    }
+}
+
+bool UnitList::insert(Unit *unit) {
+    if (!data) return false;
+    // Vehicles
+    if (unit->isVehicle()) {
+        Vehicle *v = static_cast<Vehicle*>(unit);
+        Node *cur = head;
+        while (cur) {
+            if (cur->unit->isVehicle()) {
+                Vehicle curv = static_cast<Vehicle*>(cur->unit);
+                if (curv->getvehicleType() == v->getvehicleType()) {
+                    curv->quantity += v->quantity;
+                    delete unit;
+                    return true;
+                }
+            }
+            cur = cur->next;
+        }
+        if (size >= capacity) {
+            delete unit;
+            return false;
+        }
+        Node *newNode = new Node(unit);
+        if (!head) head = newNode;
+        else {
+            Node *tail = head;
+            while (tail->next) tail = tail->next;
+            tail->next = newNode;
+        }
+        ++size;
+        return true;
+    }
+    // Infantry
+    else if (unit->isFantry()) {
+        Infantry *i = static_cast<Infantry*>(unit);
+        Node *cur = head;
+        while (cur) {
+            if (cur->unit->isInfantry()) {
+                Infantry *curi = static_cast<Infantry*>(cur->unit);
+                if (curi->getinfantryType() == i->getinfantryType()) {
+                    curi->quantity += i->quantity;
+                    delete unit;
+                    return true;
+                }
+            }
+            cur = cur->next;
+        }
+        if (size >= capacity) {
+            delete unit;
+            return false;
+        }
+        Node *newNode = new Node(unit);
+        head = newNode;
+        ++size;
+        return true;
+    }
+    delete unit;
+    return false;
+}
+
+bool UnitList::isContain(VehicleType vehicleType) const {
+    Node *cur = head;
+    while (cur) {
+        if (cur->unit->IsVehile()) {
+            Vehicle *v = static_cast<Vehicle*>(cur->unit);
+            if (v->getvehivleType() == vehicleType) {
+                return true;
+            }
+        }
+        cur = cur->next;
+    }
+    return false;
+}
+
+bool UnitList::isContain(InfantryType infantryType) const {
+    Node *cur = head;
+    while (cur) {
+        if (cur->unit->IsInfantry()) {
+            Infantry *i = static_cast<Infantry*>(cur->unit);
+            if (i->getinfantryType() == infantryType) {
+                return true;
+            }
+        }
+        cur = cur->next;
+    }
+    return false;
+}
 //
 ////////////////////////////////////////////////
 /// END OF STUDENT'S ANSWER
