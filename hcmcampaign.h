@@ -103,15 +103,21 @@ public:
     Unit(int quantity, int weight, Position pos);
     virtual ~Unit();
     virtual int getAttackScore() = 0;
+    virtual bool isVehicleType() const { return false; }
+    virtual bool isInfantryType() const { return false; }
     Position getCurrentPosition() const;
     virtual string str() const = 0;
+    virtual bool isVehicle() const { return false; }
+    virtual bool isInfantry() const { return false; }
 };
 
-class UnitList
+class UnitList 
 {
 private:
     int capacity;
     // TODO
+    Node* head;
+    int size;
 public:
     UnitList(int capacity);
     bool insert(Unit *unit);                   // return true if insert successfully
@@ -119,6 +125,15 @@ public:
     bool isContain(InfantryType infantryType); // return true if it exists
     string str() const;
     // TODO
+    ~Unitlist();
+    bool isPrimeNumber(int n);
+    struct Node {
+        Unit  *unit;
+        Node *next;
+        Node(Unit* u) : data(u), next(nullptr) {}
+    };
+    bool isContain(VehicleType vehicleType) const;
+    bool isContain(InfantryType infantryType) const;
 };
 
 class TerrainElement
@@ -166,6 +181,7 @@ public:
     int getweight() const;
     string str() const override;
     int getAttackScore() override;
+    bool isVehicle() const override { return true; }
 };
 
 class Infantry : public Unit
@@ -181,5 +197,6 @@ public:
     string str() const override;
     bool checkPerfectSquares(int n);
     int personalNumber(int n);
+    bool isInfantry() const override { return true; }
 };
 #endif
