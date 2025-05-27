@@ -251,6 +251,42 @@ bool UnitList::isContain(InfantryType infantryType) const {
     }
     return false;
 }
+
+bool UnitList::isPrimeNumber(int S) {
+    int primes[] = {2, 3, 5, 7};
+    for (int  n : primes) {
+       int sum = 0, term = 1; 
+       while (sum < S) {
+            sum += term;
+            if (sum == S) return true;
+            term *= n;
+       }
+    }
+    return false;
+}
+
+string UnitList::str() override {
+    int countV = 0;
+    int countI = 0;
+    string unitListStr = "";
+    Node *cur = head;
+
+    while (cur) {
+        if (cur->unit->isVehicle()) countV++;
+        else if (cur->unit->isInfantry()) countI++;
+
+        if (!unitListStr.empty()) {
+            unitListStr += ",";
+        }
+        unitListStr += cur->unit->str();
+
+        cur = cur->next;
+    }
+
+    return "UnitList[count_vehicle=" + to_string(countVehicle) +
+           ";count_infantry=" + to_string(countInfantry) +
+           ";<" + unitListStr + ">]";
+}
 //
 ////////////////////////////////////////////////
 /// END OF STUDENT'S ANSWER
