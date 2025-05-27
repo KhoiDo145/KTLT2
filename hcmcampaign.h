@@ -125,8 +125,7 @@ public:
     bool isContain(InfantryType infantryType); // return true if it exists
     string str() const override;
     // TODO
-    ~Unitlist();
-    bool isPrimeNumber(int n);
+    bool isSpecial(int n);
     struct Node {
         Unit  *unit;
         Node *next;
@@ -140,6 +139,42 @@ public:
     TerrainElement();
     ~TerrainElement();
     virtual void getEffect(Army *army) = 0;
+};
+
+class Road : public TerrainElement 
+{
+public:
+    void getEffect(Army *army) override;
+};
+
+class Mountain : public TerrainElement 
+{
+public:
+    void getEffect(Army *army) override;
+};
+
+class River : public TerrainElement 
+{
+public:
+    void getEffect(Army *army) override;
+};
+
+class Urban : public TerrainElement 
+{
+public:
+    void getEffect(Army *army) override;
+};
+
+class Fortification : public TerrainElement 
+{
+public:
+    void getEffect(Army *army) override;
+};
+
+class SpecialZone : public TerrainElement 
+{
+public:
+    void getEffect(Army *army) override;
 };
 
 class BattleField
@@ -197,4 +232,6 @@ public:
     int personalNumber(int n);
     bool isInfantry() const override { return true; }
 };
+
+
 #endif
