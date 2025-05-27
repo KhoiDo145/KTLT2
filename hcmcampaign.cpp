@@ -12,7 +12,7 @@ Position::Position(int r, int c)
 Position::Position(const string &str_pos) {
     string str = str_pos;
     for (int i = 0; i < str.size(); ++i) {
-        if (str[i] == '(' || str[i] == ')' || str[i] == ',') str[i] = ' ';
+        if (str[i] != ' ' && (str[i] < '0' || str[i] > '9')) str[i] = ' ';
     }
     stringstream ss(str);
     if (!(ss >> r >> c)) r = c = 0;
@@ -40,7 +40,7 @@ string Position::str() const {
 //
 
 // 3.1 
-Unit::Unit(int quantity, int weight, const Position pos)
+Unit::Unit(int quantity, int weight, const Position &pos)
     : quantity(quantity), weight(weight), pos(pos)
 {}
 
@@ -53,10 +53,8 @@ Position Unit::getCurrentPosition() const {
 
 // 3.2
 Vehicle::Vehicle(int quantity, int weight, const Position pos, VehicleType vehicleType)
-    : Unit(quantity, weight, pos)
-{
-    this->vehicleType = vehicleType;
-}
+    : quantity(quantity), weight(weight), pos(pos), vehicleType(vehicleType)
+{}
 
 VehicleType Vehicle::getVehicleType() const{
     return vehicleType;
@@ -67,8 +65,8 @@ int Vehicle::getquantity() const{
 int Vehicle::getweight() const{
     return weight;
 }
-int Vehicle::getAttackScore() {
-    return ceil((1.0 * (int)vehicleType*304 + quantity*weight) / 30);
+int Vehicle::getAttackScore() override {
+    return ((int)vehicleType*304 + quantity*weight) / 30;
 }
 string Vehicle::str() override {
     string vehicleTypestr;
@@ -86,17 +84,16 @@ string Vehicle::str() override {
     return "Vehicle[vehicleType=" + vehicleTypestr + 
             ", quantity=" + to_string(quantity) + 
             ", weight=" + to_string(weight) + 
-            ", pos=" + pos.str() + "]";
+            ", pos=" + pos + "]";
 }
 //
-
 // 3.3
-bool Infantry::checkPerfectSquares(int n) {
+bool checkPerfectSquares(int n) {
     int i = sqrt(n);
     return i*i == n;
 }
 
-int Infantry::personalNumber(int n) {
+int personalNumber(int n) {
     do {
         int sum = 0;
         while (n > 0) {
@@ -109,10 +106,8 @@ int Infantry::personalNumber(int n) {
 }
  
 Infantry::Infantry(int quantity, int weight, const Position pos, InfantryType infantryType)
-    : Unit(quantity, weight, pos)
-{
-    this->infantryType = infantryType;
-}
+    : quantity(quantity), weight(weight), pos(pos), infantryType(infantryType)
+{}
 
 InfantryType Infantry::getinfantryType() const{
     return infantryType;
@@ -123,13 +118,13 @@ int Infantry::getquantity() const{
 int Infantry::getweight() const{
     return weight;
 }
-int Infantry::getAttackScore()  {
+int Infantry::getAttackScore() override {
     int score = (int)infantryType*56 + quantity*weight;
-    if (infantryType == SPECIALFORCES && checkPerfectSquares(weight)) score += 75;
-    score = score + 4;
-    if (personalNumber(score) > 7) quantity = ceil(1.2 * quantity);
-    else if (personalNumber(score) < 3) quantity = quantity - ceil(0.1 * quantity);
-    return (int)infantryType*56 + quantity*weight + ((infantryType == SPECIALFORCES && checkPerfectSquares(weight)) ? 75 : 0);
+    if (infantryType == 4 && checkPerfectSquares(weight)) score += 75;
+    score = score + 22;
+    if (personalNumber(score) > 7) score = score + quantity*weight*(0.2);
+    else if (personalNumber(score) < 3) score = score - quantity*weight*(0.1);
+    return score;
 }
 string Infantry::str() override {
     string infantryTypestr;
@@ -146,34 +141,27 @@ string Infantry::str() override {
     return "Infantry[infantryType=" + infantryTypestr + 
             ", quantity=" + to_string(quantity) + 
             ", weight=" + to_string(weight) + 
-            ", pos=" + pos.str() + "]";
+            ", pos=" + pos + "]";
 }
 //
 
 // 3.5
 UnitList::UnitList(int capacity) 
     : head(nullptr), size(0), capacity(capacity) 
-{}
-
-UnitList::~UnitList() {
-    Node* cur = head;
-    while (cur) {
-        Node* temp = cur->next;
-        delete cur->data;
-        delete cur;
-        cur = temp;
-    }
+{
+    if (isSpecial(S)) capacity = 12;
+    else capacity = 8;
 }
 
 bool UnitList::insert(Unit *unit) {
-    if (!data) return false;
+    if (!unit) return false;
     // Vehicles
     if (unit->isVehicle()) {
         Vehicle *v = static_cast<Vehicle*>(unit);
         Node *cur = head;
         while (cur) {
             if (cur->unit->isVehicle()) {
-                Vehicle curv = static_cast<Vehicle*>(cur->unit);
+                Vehicle *curv = static_cast<Vehicle*>(cur->unit);
                 if (curv->getvehicleType() == v->getvehicleType()) {
                     curv->quantity += v->quantity;
                     delete unit;
@@ -197,7 +185,7 @@ bool UnitList::insert(Unit *unit) {
         return true;
     }
     // Infantry
-    else if (unit->isFantry()) {
+    else if (unit->isInfantry()) {
         Infantry *i = static_cast<Infantry*>(unit);
         Node *cur = head;
         while (cur) {
@@ -224,12 +212,12 @@ bool UnitList::insert(Unit *unit) {
     return false;
 }
 
-bool UnitList::isContain(VehicleType vehicleType) const {
+bool UnitList::isContain(VehicleType vehicleType) {
     Node *cur = head;
     while (cur) {
-        if (cur->unit->IsVehile()) {
+        if (cur->unit->isVehicle()) {
             Vehicle *v = static_cast<Vehicle*>(cur->unit);
-            if (v->getvehivleType() == vehicleType) {
+            if (v->getvehicleType() == vehicleType) {
                 return true;
             }
         }
@@ -238,7 +226,7 @@ bool UnitList::isContain(VehicleType vehicleType) const {
     return false;
 }
 
-bool UnitList::isContain(InfantryType infantryType) const {
+bool UnitList::isContain(InfantryType infantryType) {
     Node *cur = head;
     while (cur) {
         if (cur->unit->IsInfantry()) {
@@ -252,7 +240,7 @@ bool UnitList::isContain(InfantryType infantryType) const {
     return false;
 }
 
-bool UnitList::isPrimeNumber(int S) {
+bool UnitList::isSpecial(int S) {
     int primes[] = {2, 3, 5, 7};
     for (int  n : primes) {
        int sum = 0, term = 1; 
@@ -265,7 +253,7 @@ bool UnitList::isPrimeNumber(int S) {
     return false;
 }
 
-string UnitList::str() override {
+string UnitList::str() {
     int countV = 0;
     int countI = 0;
     string unitListStr = "";
@@ -283,10 +271,32 @@ string UnitList::str() override {
         cur = cur->next;
     }
 
-    return "UnitList[count_vehicle=" + to_string(countVehicle) +
-           ";count_infantry=" + to_string(countInfantry) +
+    return "UnitList[count_vehicle=" + to_string(countV) +
+           ";count_infantry=" + to_string(countI) +
            ";<" + unitListStr + ">]";
 }
+//
+
+// 3.4
+Army::Army(const Unit **unitArray, int size, string name, BattleField *battleField)
+    : LF(0), EXP(0), name(name), battleField(battleField)
+{
+    unitList = new UnitList(size);
+    for (int i = 0; i < size; ++i) {
+        if(unitArray[i]) {
+            unitList->insert(unitArray[i]);
+            if (unitarray[i]->isVehicle()) LF += unitArray[i]->getAttackScore();
+            else EXP += unitArray[i]->getAttackScore();
+        }
+    }
+}
+//
+
+// 3.7
+TerrainElement::TerrainElement(){};
+TerrainElement::~TerrainElement(){};
+
+
 //
 ////////////////////////////////////////////////
 /// END OF STUDENT'S ANSWER
