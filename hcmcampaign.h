@@ -123,17 +123,15 @@ public:
     bool insert(Unit *unit);                   // return true if insert successfully
     bool isContain(VehicleType vehicleType);   // return true if it exists
     bool isContain(InfantryType infantryType); // return true if it exists
-    string str() const;
+    string str() const override;
     // TODO
     ~Unitlist();
     bool isPrimeNumber(int n);
     struct Node {
         Unit  *unit;
         Node *next;
-        Node(Unit* u) : data(u), next(nullptr) {}
+        Node(Unit* u) : unit(u), next(nullptr) {}
     };
-    bool isContain(VehicleType vehicleType) const;
-    bool isContain(InfantryType infantryType) const;
 };
 
 class TerrainElement
