@@ -37,6 +37,10 @@ void Position::setCol(int c) {
 string Position::str() const {
     return "(" + to_string(r) + ", " + to_string(c) + ")";
 }
+
+double Position::distance(const Position& a, const Position& b) {
+        return hypot((a.r - b.r), (a.c - b.c));
+}
 //
 
 // 3.1 
