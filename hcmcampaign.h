@@ -90,6 +90,7 @@ public:
     int getCol() const;
     void setRow(int r);
     void setCol(int c);
+    double distance(const Position& a, const Position& b);
     string str() const; // Example: returns "(1,15)"
 };
 
@@ -232,6 +233,5 @@ public:
     int personalNumber(int n);
     bool isInfantry() const override { return true; }
 };
-
 
 #endif
